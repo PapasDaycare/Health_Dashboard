@@ -42,8 +42,10 @@ export class MemStorage implements IStorage {
     this.appointments = new Map();
     this.reminders = new Map();
     
-    // Add sample data asynchronously
-    this.initializeSampleData().catch(console.error);
+    // Only load sample data in development
+    if (process.env.NODE_ENV === 'development') {
+      this.initializeSampleData().catch(console.error);
+    }
   }
 
   private async initializeSampleData() {
