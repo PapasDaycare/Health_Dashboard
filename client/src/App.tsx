@@ -12,7 +12,7 @@ import Header from "@/components/layout/header";
 
 function Router() {
   return (
-    <div className="min-h-screen flex bg-medical-gray-light">
+    <div className="min-h-screen flex bg-gray-50 lg:bg-medical-gray-light">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />

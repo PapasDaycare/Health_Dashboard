@@ -96,17 +96,17 @@ export default function Dashboard() {
 
   if (statsLoading || physiciansLoading || appointmentsLoading) {
     return (
-      <div className="py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="animate-pulse space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="py-4 sm:py-6">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="animate-pulse space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-24 bg-gray-200 rounded-lg"></div>
+                <div key={i} className="h-16 sm:h-24 bg-gray-200 rounded-lg"></div>
               ))}
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 h-96 bg-gray-200 rounded-lg"></div>
-              <div className="h-96 bg-gray-200 rounded-lg"></div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+              <div className="lg:col-span-2 h-64 sm:h-96 bg-gray-200 rounded-lg"></div>
+              <div className="h-64 sm:h-96 bg-gray-200 rounded-lg"></div>
             </div>
           </div>
         </div>
@@ -115,10 +115,16 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="py-6">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="py-4 sm:py-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+        {/* Mobile Page Title */}
+        <div className="lg:hidden mb-4">
+          <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-sm text-gray-600 mt-1">Healthcare overview</p>
+        </div>
+        
         {/* Dashboard Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           <StatsCard
             title="Total Physicians"
             value={stats?.totalPhysicians || 0}
@@ -150,9 +156,9 @@ export default function Dashboard() {
         </div>
 
         {/* Main Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Recent Physicians */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 order-2 lg:order-1">
             <PhysicianList
               physicians={physicians.slice(0, 5)} // Show first 5 physicians
               onAddPhysician={handleAddPhysician}
@@ -162,7 +168,7 @@ export default function Dashboard() {
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 order-1 lg:order-2 space-y-4 sm:space-y-6">
             <UpcomingAppointments
               appointments={upcomingAppointments.slice(0, 3)} // Show first 3 appointments
               physicians={physicians}

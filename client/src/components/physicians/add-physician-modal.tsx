@@ -63,14 +63,14 @@ export default function AddPhysicianModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Physician</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">Add New Physician</DialogTitle>
         </DialogHeader>
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <FormField
                 control={form.control}
                 name="firstName"
@@ -124,7 +124,7 @@ export default function AddPhysicianModal({
               )}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <FormField
                 control={form.control}
                 name="phone"
@@ -200,11 +200,12 @@ export default function AddPhysicianModal({
               )}
             />
 
-            <div className="flex items-center justify-end space-x-4 pt-6">
+            <div className="flex flex-col sm:flex-row items-center justify-end gap-3 sm:gap-4 pt-4 sm:pt-6">
               <Button 
                 type="button" 
                 variant="outline"
                 onClick={() => onOpenChange(false)}
+                className="w-full sm:w-auto order-2 sm:order-1"
                 data-testid="button-cancel"
               >
                 Cancel
@@ -212,7 +213,7 @@ export default function AddPhysicianModal({
               <Button 
                 type="submit" 
                 disabled={isLoading}
-                className="bg-medical-blue hover:bg-medical-blue/90"
+                className="w-full sm:w-auto bg-medical-blue hover:bg-medical-blue/90 order-1 sm:order-2"
                 data-testid="button-submit"
               >
                 {isLoading ? "Adding..." : "Add Physician"}

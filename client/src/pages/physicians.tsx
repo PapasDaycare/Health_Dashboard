@@ -61,13 +61,13 @@ export default function Physicians() {
 
   if (isLoading) {
     return (
-      <div className="py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="py-4 sm:py-6">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="animate-pulse space-y-4 sm:space-y-6">
+            <div className="h-6 sm:h-8 bg-gray-200 rounded w-1/2 sm:w-1/4"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
+                <div key={i} className="h-40 sm:h-48 bg-gray-200 rounded-lg"></div>
               ))}
             </div>
           </div>
@@ -77,17 +77,17 @@ export default function Physicians() {
   }
 
   return (
-    <div className="py-6">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="py-4 sm:py-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Physicians</h1>
-            <p className="text-gray-600 mt-2">Manage your healthcare providers</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Physicians</h1>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">Manage your healthcare providers</p>
           </div>
           <Button
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-medical-blue hover:bg-medical-blue/90"
+            className="bg-medical-blue hover:bg-medical-blue/90 w-full sm:w-auto"
             data-testid="button-add-physician"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -96,15 +96,15 @@ export default function Physicians() {
         </div>
 
         {/* Search */}
-        <div className="mb-6">
-          <div className="relative max-w-md">
+        <div className="mb-4 sm:mb-6">
+          <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="text-gray-400 h-4 w-4" />
             </div>
             <Input
               type="text"
               placeholder="Search physicians..."
-              className="pl-10"
+              className="pl-10 w-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               data-testid="input-search-physicians"
@@ -142,48 +142,48 @@ export default function Physicians() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredPhysicians.map((physician, index) => (
               <Card key={physician.id} className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center space-x-4">
-                    <div className={`w-12 h-12 ${getPhysicianColor(index)} rounded-full flex items-center justify-center`}>
-                      <span className="text-white font-semibold text-sm">
+                <CardHeader className="pb-3 sm:pb-4">
+                  <div className="flex items-center space-x-3 sm:space-x-4">
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 ${getPhysicianColor(index)} rounded-full flex items-center justify-center flex-shrink-0`}>
+                      <span className="text-white font-semibold text-xs sm:text-sm">
                         {getInitials(physician.firstName, physician.lastName)}
                       </span>
                     </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
                         Dr. {physician.firstName} {physician.lastName}
                       </h3>
-                      <p className="text-medical-gray">{physician.specialty}</p>
+                      <p className="text-medical-gray text-sm">{physician.specialty}</p>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Phone className="h-4 w-4 mr-2" />
-                    <span>{physician.phone}</span>
+                <CardContent className="space-y-2 sm:space-y-3">
+                  <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                    <Phone className="h-3 w-3 sm:h-4 sm:w-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">{physician.phone}</span>
                   </div>
                   
                   {physician.email && (
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Mail className="h-4 w-4 mr-2" />
-                      <span>{physician.email}</span>
+                    <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                      <Mail className="h-3 w-3 sm:h-4 sm:w-4 mr-2 flex-shrink-0" />
+                      <span className="truncate">{physician.email}</span>
                     </div>
                   )}
                   
                   {physician.address && (
-                    <div className="flex items-start text-sm text-gray-600">
-                      <MapPin className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+                    <div className="flex items-start text-xs sm:text-sm text-gray-600">
+                      <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-2 mt-0.5 flex-shrink-0" />
                       <span className="line-clamp-2">{physician.address}</span>
                     </div>
                   )}
 
-                  <div className="pt-3 flex space-x-2">
+                  <div className="pt-2 sm:pt-3 flex flex-col sm:flex-row gap-2">
                     <Button
                       size="sm"
-                      className="flex-1 bg-medical-blue text-white hover:bg-medical-blue/90"
+                      className="flex-1 bg-medical-blue text-white hover:bg-medical-blue/90 text-xs sm:text-sm"
                       data-testid={`button-schedule-${physician.id}`}
                     >
                       Schedule
@@ -191,7 +191,7 @@ export default function Physicians() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="flex-1"
+                      className="flex-1 text-xs sm:text-sm"
                       data-testid={`button-edit-${physician.id}`}
                     >
                       Edit
