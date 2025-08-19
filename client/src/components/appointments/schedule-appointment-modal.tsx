@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertAppointmentSchema, type InsertAppointment, type Physician } from "@shared/schema";
 import { z } from "zod";
-import { useAuth } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 const appointmentFormSchema = insertAppointmentSchema.extend({
@@ -48,13 +47,12 @@ export default function ScheduleAppointmentModal({
   selectedPhysicianId,
   isLoading = false 
 }: ScheduleAppointmentModalProps) {
-  const { user } = useAuth();
-  const userId = user?.id || "";
+  const user = getCurrentUser();
   
   const form = useForm<z.infer<typeof appointmentFormSchema>>({
     resolver: zodResolver(appointmentFormSchema),
     defaultValues: {
-      userId,
+      userId: user.id,
       physicianId: selectedPhysicianId || "",
       date: "",
       time: "",
@@ -63,15 +61,6 @@ export default function ScheduleAppointmentModal({
       status: "scheduled",
     },
   });
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    form.setValue("physicianId", selectedPhysicianId || "");
-    form.setValue("userId", userId);
-  }, [form, open, selectedPhysicianId, userId]);
 
   const handleSubmit = (values: z.infer<typeof appointmentFormSchema>) => {
     onSubmit(values);
@@ -88,13 +77,13 @@ export default function ScheduleAppointmentModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-lg sm:text-xl">Schedule Appointment</DialogTitle>
+          <DialogTitle>Schedule Appointment</DialogTitle>
         </DialogHeader>
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 sm:space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="physicianId"
@@ -120,7 +109,7 @@ export default function ScheduleAppointmentModal({
               )}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
                 name="date"
@@ -209,12 +198,11 @@ export default function ScheduleAppointmentModal({
               )}
             />
 
-            <div className="flex flex-col sm:flex-row items-center justify-end gap-3 sm:gap-4 pt-4 sm:pt-6">
+            <div className="flex items-center justify-end space-x-4 pt-6">
               <Button 
                 type="button" 
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="w-full sm:w-auto order-2 sm:order-1"
                 data-testid="button-cancel"
               >
                 Cancel
@@ -222,7 +210,7 @@ export default function ScheduleAppointmentModal({
               <Button 
                 type="submit" 
                 disabled={isLoading}
-                className="w-full sm:w-auto bg-medical-blue hover:bg-medical-blue/90 order-1 sm:order-2"
+                className="bg-medical-blue hover:bg-medical-blue/90"
                 data-testid="button-submit"
               >
                 {isLoading ? "Scheduling..." : "Schedule Appointment"}

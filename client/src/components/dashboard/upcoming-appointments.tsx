@@ -64,30 +64,28 @@ export default function UpcomingAppointments({
       <CardContent className="p-0">
         <div className="divide-y divide-gray-200">
           {appointments.length === 0 ? (
-            <div className="p-4 sm:p-6 text-center text-gray-500 text-sm">
+            <div className="p-6 text-center text-gray-500">
               No upcoming appointments
             </div>
           ) : (
             appointments.map((appointment, index) => (
-              <div key={appointment.id} className="p-4 sm:p-6">
+              <div key={appointment.id} className="p-6">
                 <div className="flex items-start space-x-3">
-                  <div className={`w-2 h-2 sm:w-3 sm:h-3 ${getAppointmentColor(index)} rounded-full mt-2 flex-shrink-0`}></div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                  <div className={`w-3 h-3 ${getAppointmentColor(index)} rounded-full mt-2`}></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">
                       {getPhysicianName(appointment.physicianId)}
                     </p>
-                    <p className="text-xs sm:text-sm text-medical-gray truncate">
+                    <p className="text-sm text-medical-gray">
                       {appointment.type} - {getPhysicianSpecialty(appointment.physicianId)}
                     </p>
-                    <div className="mt-2 space-y-1">
-                      <div className="flex items-center text-xs sm:text-sm text-medical-gray">
-                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-2 flex-shrink-0" />
-                        <span className="truncate">{formatAppointmentDate(appointment.date)}</span>
-                      </div>
-                      <div className="flex items-center text-xs sm:text-sm text-medical-gray">
-                        <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-2 flex-shrink-0" />
-                        <span>{formatAppointmentTime(appointment.time)}</span>
-                      </div>
+                    <div className="mt-2 flex items-center text-sm text-medical-gray">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      <span>{formatAppointmentDate(appointment.date)}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-medical-gray">
+                      <Clock className="h-4 w-4 mr-2" />
+                      <span>{formatAppointmentTime(appointment.time)}</span>
                     </div>
                   </div>
                 </div>
@@ -95,16 +93,15 @@ export default function UpcomingAppointments({
             ))
           )}
         </div>
-        <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border-t border-gray-200">
+        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
           <Button
             variant="outline"
-            className="w-full flex items-center justify-center bg-white text-medical-gray hover:bg-gray-50 text-sm"
+            className="w-full flex items-center justify-center bg-white text-medical-gray hover:bg-gray-50"
             onClick={onScheduleAppointment}
             data-testid="button-schedule-appointment"
           >
             <Plus className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Schedule Appointment</span>
-            <span className="sm:hidden">Schedule</span>
+            Schedule Appointment
           </Button>
         </div>
       </CardContent>

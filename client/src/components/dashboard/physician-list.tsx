@@ -49,29 +49,29 @@ export default function PhysicianList({
       <CardContent className="p-0">
         <div className="divide-y divide-gray-200">
           {physicians.map((physician, index) => (
-            <div key={physician.id} className="p-4 sm:p-6 hover:bg-gray-50 transition-colors">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
-                  <div className={`w-10 h-10 sm:w-12 sm:h-12 ${getPhysicianColor(index)} rounded-full flex items-center justify-center flex-shrink-0`}>
-                    <span className="text-white font-semibold text-xs sm:text-sm">
+            <div key={physician.id} className="p-6 hover:bg-gray-50 transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className={`w-12 h-12 ${getPhysicianColor(index)} rounded-full flex items-center justify-center`}>
+                    <span className="text-white font-semibold text-sm">
                       {getInitials(physician.firstName, physician.lastName)}
                     </span>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="text-base sm:text-lg font-medium text-gray-900 truncate">
+                  <div>
+                    <h4 className="text-lg font-medium text-gray-900">
                       Dr. {physician.firstName} {physician.lastName}
                     </h4>
-                    <p className="text-medical-gray text-sm">{physician.specialty}</p>
-                    <div className="flex items-center mt-1 text-xs sm:text-sm text-medical-gray">
-                      <Phone className="h-3 w-3 sm:h-4 sm:w-4 mr-2 flex-shrink-0" />
-                      <span className="truncate">{physician.phone}</span>
+                    <p className="text-medical-gray">{physician.specialty}</p>
+                    <div className="flex items-center mt-1 text-sm text-medical-gray">
+                      <Phone className="h-4 w-4 mr-2" />
+                      <span>{physician.phone}</span>
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex space-x-2">
                   <Button
                     size="sm"
-                    className="bg-medical-blue text-white hover:bg-medical-blue/90 text-xs sm:text-sm"
+                    className="bg-medical-blue text-white hover:bg-medical-blue/90"
                     onClick={() => onScheduleAppointment(physician.id)}
                     data-testid={`button-schedule-${physician.id}`}
                   >
@@ -80,7 +80,7 @@ export default function PhysicianList({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="bg-gray-100 text-gray-700 hover:bg-gray-200 text-xs sm:text-sm"
+                    className="bg-gray-100 text-gray-700 hover:bg-gray-200"
                     onClick={() => onEditPhysician(physician.id)}
                     data-testid={`button-edit-${physician.id}`}
                   >
@@ -91,10 +91,10 @@ export default function PhysicianList({
             </div>
           ))}
         </div>
-        <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border-t border-gray-200">
+        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
           <Button
             variant="outline"
-            className="w-full flex items-center justify-center bg-white text-medical-gray hover:bg-gray-50 text-sm"
+            className="w-full flex items-center justify-center bg-white text-medical-gray hover:bg-gray-50"
             onClick={onAddPhysician}
             data-testid="button-add-physician"
           >

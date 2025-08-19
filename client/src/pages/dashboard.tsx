@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Users, Calendar, Bell, Clock } from "lucide-react";
-import { useAuth } from "@/lib/auth";
-import { queryClient, apiRequest, fetchWithUser } from "@/lib/queryClient";
+import { getCurrentUser } from "@/lib/auth";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { type Physician, type Appointment, type InsertPhysician, type InsertAppointment } from "@shared/schema";
 
@@ -25,29 +25,25 @@ export default function Dashboard() {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [selectedPhysicianId, setSelectedPhysicianId] = useState<string | undefined>();
   
-  const { user } = useAuth();
-  const userId = user?.id || "";
+  const user = getCurrentUser();
   const { toast } = useToast();
 
   // Fetch dashboard stats
   const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
-    queryKey: ["/api/dashboard/stats", userId],
-    queryFn: () => fetchWithUser<DashboardStats>("/api/dashboard/stats"),
-    enabled: !!userId,
+    queryKey: ["/api/dashboard/stats", user.id],
+    queryFn: () => fetch(`/api/dashboard/stats?userId=${user.id}`).then(res => res.json()),
   });
 
   // Fetch physicians
   const { data: physicians = [], isLoading: physiciansLoading } = useQuery<Physician[]>({
-    queryKey: ["/api/physicians", userId],
-    queryFn: () => fetchWithUser<Physician[]>("/api/physicians"),
-    enabled: !!userId,
+    queryKey: ["/api/physicians", user.id],
+    queryFn: () => fetch(`/api/physicians?userId=${user.id}`).then(res => res.json()),
   });
 
   // Fetch upcoming appointments
   const { data: upcomingAppointments = [], isLoading: appointmentsLoading } = useQuery<Appointment[]>({
-    queryKey: ["/api/appointments/upcoming", userId],
-    queryFn: () => fetchWithUser<Appointment[]>("/api/appointments/upcoming"),
-    enabled: !!userId,
+    queryKey: ["/api/appointments/upcoming", user.id],
+    queryFn: () => fetch(`/api/appointments/upcoming?userId=${user.id}`).then(res => res.json()),
   });
 
   // Add physician mutation
@@ -56,11 +52,8 @@ export default function Dashboard() {
     onSuccess: () => {
       toast({ title: "Physician added successfully" });
       setIsAddPhysicianModalOpen(false);
-      if (!userId) {
-        return;
-      }
-      queryClient.invalidateQueries({ queryKey: ["/api/physicians", userId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/physicians"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
     },
     onError: () => {
       toast({ title: "Failed to add physician", variant: "destructive" });
@@ -74,12 +67,8 @@ export default function Dashboard() {
       toast({ title: "Appointment scheduled successfully" });
       setIsScheduleModalOpen(false);
       setSelectedPhysicianId(undefined);
-      if (!userId) {
-        return;
-      }
-      queryClient.invalidateQueries({ queryKey: ["/api/appointments", userId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/appointments/upcoming", userId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
     },
     onError: () => {
       toast({ title: "Failed to schedule appointment", variant: "destructive" });
@@ -107,17 +96,17 @@ export default function Dashboard() {
 
   if (statsLoading || physiciansLoading || appointmentsLoading) {
     return (
-      <div className="py-4 sm:py-6">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-          <div className="animate-pulse space-y-4 sm:space-y-6">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+      <div className="py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="animate-pulse space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-16 sm:h-24 bg-gray-200 rounded-lg"></div>
+                <div key={i} className="h-24 bg-gray-200 rounded-lg"></div>
               ))}
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-              <div className="lg:col-span-2 h-64 sm:h-96 bg-gray-200 rounded-lg"></div>
-              <div className="h-64 sm:h-96 bg-gray-200 rounded-lg"></div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 h-96 bg-gray-200 rounded-lg"></div>
+              <div className="h-96 bg-gray-200 rounded-lg"></div>
             </div>
           </div>
         </div>
@@ -126,16 +115,10 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="py-4 sm:py-6">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-        {/* Mobile Page Title */}
-        <div className="lg:hidden mb-4">
-          <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-600 mt-1">Healthcare overview</p>
-        </div>
-        
+    <div className="py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Dashboard Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatsCard
             title="Total Physicians"
             value={stats?.totalPhysicians || 0}
@@ -167,9 +150,9 @@ export default function Dashboard() {
         </div>
 
         {/* Main Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Recent Physicians */}
-          <div className="lg:col-span-2 order-2 lg:order-1">
+          <div className="lg:col-span-2">
             <PhysicianList
               physicians={physicians.slice(0, 5)} // Show first 5 physicians
               onAddPhysician={handleAddPhysician}
@@ -179,7 +162,7 @@ export default function Dashboard() {
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1 order-1 lg:order-2 space-y-4 sm:space-y-6">
+          <div className="lg:col-span-1 space-y-6">
             <UpcomingAppointments
               appointments={upcomingAppointments.slice(0, 3)} // Show first 3 appointments
               physicians={physicians}
