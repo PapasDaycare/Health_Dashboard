@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertAppointmentSchema, type InsertAppointment, type Physician } from "@shared/schema";
 import { z } from "zod";
-import { getCurrentUser } from "@/lib/auth";
+import { useAuth } from "@/lib/auth";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 const appointmentFormSchema = insertAppointmentSchema.extend({
@@ -47,12 +48,13 @@ export default function ScheduleAppointmentModal({
   selectedPhysicianId,
   isLoading = false 
 }: ScheduleAppointmentModalProps) {
-  const user = getCurrentUser();
+  const { user } = useAuth();
+  const userId = user?.id || "";
   
   const form = useForm<z.infer<typeof appointmentFormSchema>>({
     resolver: zodResolver(appointmentFormSchema),
     defaultValues: {
-      userId: user.id,
+      userId,
       physicianId: selectedPhysicianId || "",
       date: "",
       time: "",
@@ -61,6 +63,15 @@ export default function ScheduleAppointmentModal({
       status: "scheduled",
     },
   });
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    form.setValue("physicianId", selectedPhysicianId || "");
+    form.setValue("userId", userId);
+  }, [form, open, selectedPhysicianId, userId]);
 
   const handleSubmit = (values: z.infer<typeof appointmentFormSchema>) => {
     onSubmit(values);

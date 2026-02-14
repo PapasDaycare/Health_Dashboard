@@ -7,6 +7,15 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+export async function fetchWithUser<T>(url: string): Promise<T> {
+  const res = await fetch(url, {
+    credentials: "include",
+  });
+
+  await throwIfResNotOk(res);
+  return await res.json();
+}
+
 export async function apiRequest(
   method: string,
   url: string,
@@ -14,7 +23,9 @@ export async function apiRequest(
 ): Promise<Response> {
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers: {
+      ...(data ? { "Content-Type": "application/json" } : {}),
+    },
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });

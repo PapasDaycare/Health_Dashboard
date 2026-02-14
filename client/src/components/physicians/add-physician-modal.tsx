@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPhysicianSchema, type InsertPhysician } from "@shared/schema";
 import { z } from "zod";
-import { getCurrentUser } from "@/lib/auth";
+import { useAuth } from "@/lib/auth";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 const physicianFormSchema = insertPhysicianSchema.extend({
@@ -40,12 +40,13 @@ export default function AddPhysicianModal({
   onSubmit, 
   isLoading = false 
 }: AddPhysicianModalProps) {
-  const user = getCurrentUser();
+  const { user } = useAuth();
+  const userId = user?.id || "";
   
   const form = useForm<z.infer<typeof physicianFormSchema>>({
     resolver: zodResolver(physicianFormSchema),
     defaultValues: {
-      userId: user.id,
+      userId,
       firstName: "",
       lastName: "",
       specialty: "",
@@ -55,6 +56,14 @@ export default function AddPhysicianModal({
       officeHours: "",
     },
   });
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    form.setValue("userId", userId);
+  }, [form, open, userId]);
 
   const handleSubmit = (values: z.infer<typeof physicianFormSchema>) => {
     onSubmit(values);

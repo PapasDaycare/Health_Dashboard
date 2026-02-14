@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Users, Calendar, Bell, Clock } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth";
-import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/lib/auth";
+import { queryClient, apiRequest, fetchWithUser } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { type Physician, type Appointment, type InsertPhysician, type InsertAppointment } from "@shared/schema";
 
@@ -25,25 +25,29 @@ export default function Dashboard() {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [selectedPhysicianId, setSelectedPhysicianId] = useState<string | undefined>();
   
-  const user = getCurrentUser();
+  const { user } = useAuth();
+  const userId = user?.id || "";
   const { toast } = useToast();
 
   // Fetch dashboard stats
   const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
-    queryKey: ["/api/dashboard/stats", user.id],
-    queryFn: () => fetch(`/api/dashboard/stats?userId=${user.id}`).then(res => res.json()),
+    queryKey: ["/api/dashboard/stats", userId],
+    queryFn: () => fetchWithUser<DashboardStats>("/api/dashboard/stats"),
+    enabled: !!userId,
   });
 
   // Fetch physicians
   const { data: physicians = [], isLoading: physiciansLoading } = useQuery<Physician[]>({
-    queryKey: ["/api/physicians", user.id],
-    queryFn: () => fetch(`/api/physicians?userId=${user.id}`).then(res => res.json()),
+    queryKey: ["/api/physicians", userId],
+    queryFn: () => fetchWithUser<Physician[]>("/api/physicians"),
+    enabled: !!userId,
   });
 
   // Fetch upcoming appointments
   const { data: upcomingAppointments = [], isLoading: appointmentsLoading } = useQuery<Appointment[]>({
-    queryKey: ["/api/appointments/upcoming", user.id],
-    queryFn: () => fetch(`/api/appointments/upcoming?userId=${user.id}`).then(res => res.json()),
+    queryKey: ["/api/appointments/upcoming", userId],
+    queryFn: () => fetchWithUser<Appointment[]>("/api/appointments/upcoming"),
+    enabled: !!userId,
   });
 
   // Add physician mutation
@@ -52,8 +56,11 @@ export default function Dashboard() {
     onSuccess: () => {
       toast({ title: "Physician added successfully" });
       setIsAddPhysicianModalOpen(false);
-      queryClient.invalidateQueries({ queryKey: ["/api/physicians"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      if (!userId) {
+        return;
+      }
+      queryClient.invalidateQueries({ queryKey: ["/api/physicians", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats", userId] });
     },
     onError: () => {
       toast({ title: "Failed to add physician", variant: "destructive" });
@@ -67,8 +74,12 @@ export default function Dashboard() {
       toast({ title: "Appointment scheduled successfully" });
       setIsScheduleModalOpen(false);
       setSelectedPhysicianId(undefined);
-      queryClient.invalidateQueries({ queryKey: ["/api/appointments"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      if (!userId) {
+        return;
+      }
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments/upcoming", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats", userId] });
     },
     onError: () => {
       toast({ title: "Failed to schedule appointment", variant: "destructive" });

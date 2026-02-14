@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus, Calendar, Clock, User, FileText, Search } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth";
-import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/lib/auth";
+import { queryClient, apiRequest, fetchWithUser } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { type Appointment, type Physician, type InsertAppointment } from "@shared/schema";
 import { format } from "date-fns";
@@ -17,19 +17,22 @@ export default function Appointments() {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   
-  const user = getCurrentUser();
+  const { user } = useAuth();
+  const userId = user?.id || "";
   const { toast } = useToast();
 
   // Fetch appointments
   const { data: appointments = [], isLoading: appointmentsLoading } = useQuery<Appointment[]>({
-    queryKey: ["/api/appointments", user.id],
-    queryFn: () => fetch(`/api/appointments?userId=${user.id}`).then(res => res.json()),
+    queryKey: ["/api/appointments", userId],
+    queryFn: () => fetchWithUser<Appointment[]>("/api/appointments"),
+    enabled: !!userId,
   });
 
   // Fetch physicians
   const { data: physicians = [], isLoading: physiciansLoading } = useQuery<Physician[]>({
-    queryKey: ["/api/physicians", user.id],
-    queryFn: () => fetch(`/api/physicians?userId=${user.id}`).then(res => res.json()),
+    queryKey: ["/api/physicians", userId],
+    queryFn: () => fetchWithUser<Physician[]>("/api/physicians"),
+    enabled: !!userId,
   });
 
   // Schedule appointment mutation
@@ -38,7 +41,12 @@ export default function Appointments() {
     onSuccess: () => {
       toast({ title: "Appointment scheduled successfully" });
       setIsScheduleModalOpen(false);
-      queryClient.invalidateQueries({ queryKey: ["/api/appointments"] });
+      if (!userId) {
+        return;
+      }
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments/upcoming", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats", userId] });
     },
     onError: () => {
       toast({ title: "Failed to schedule appointment", variant: "destructive" });

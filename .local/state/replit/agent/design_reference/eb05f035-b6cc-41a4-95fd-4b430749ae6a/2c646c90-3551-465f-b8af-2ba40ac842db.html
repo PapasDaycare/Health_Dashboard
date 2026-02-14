@@ -1,0 +1,724 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedConnect - Healthcare Contact Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        medical: {
+                            blue: '#2563eb',
+                            'blue-light': '#eff6ff',
+                            green: '#10b981',
+                            'green-light': '#f0fdf4',
+                            gray: '#64748b',
+                            'gray-light': '#f8fafc'
+                        }
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'ui-sans-serif', 'system-ui']
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-medical-gray-light font-sans">
+    <!-- @COMPONENT: AppLayout -->
+    <div class="min-h-screen flex">
+        <!-- Sidebar Navigation -->
+        <!-- @COMPONENT: Sidebar -->
+        <div class="hidden lg:flex lg:w-64 lg:flex-col">
+            <div class="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto bg-white border-r border-gray-200">
+                <div class="flex items-center flex-shrink-0 px-4">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-medical-blue rounded-lg flex items-center justify-center">
+                            <i class="fas fa-heartbeat text-white text-lg"></i>
+                        </div>
+                        <h1 class="ml-3 text-xl font-bold text-gray-900">MedConnect</h1>
+                    </div>
+                </div>
+                <nav class="mt-8 flex-1" data-mock="true">
+                    <div class="px-2 space-y-1">
+                        <a href="#" class="bg-medical-blue-light text-medical-blue group flex items-center px-2 py-2 text-sm font-medium rounded-md" data-bind="activeRoute === 'dashboard'">
+                            <i class="fas fa-home mr-3 text-lg"></i>
+                            Dashboard
+                        </a>
+                        <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md" data-event="click:navigateToPhysicians">
+                            <i class="fas fa-user-md mr-3 text-lg"></i>
+                            Physicians
+                        </a>
+                        <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md" data-event="click:navigateToAppointments">
+                            <i class="fas fa-calendar-alt mr-3 text-lg"></i>
+                            Appointments
+                        </a>
+                        <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md" data-event="click:navigateToReminders">
+                            <i class="fas fa-bell mr-3 text-lg"></i>
+                            Reminders
+                        </a>
+                        <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md" data-event="click:navigateToSettings">
+                            <i class="fas fa-cog mr-3 text-lg"></i>
+                            Settings
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- Main Content Area -->
+        <!-- @COMPONENT: MainContent -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Top Navigation -->
+            <!-- @COMPONENT: TopNavigation -->
+            <header class="bg-white shadow-sm border-b border-gray-200">
+                <div class="flex items-center justify-between px-6 py-4">
+                    <div class="flex items-center">
+                        <button class="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100" data-event="click:toggleMobileMenu">
+                            <i class="fas fa-bars text-lg"></i>
+                        </button>
+                        <h2 class="ml-2 lg:ml-0 text-2xl font-semibold text-gray-900" data-bind="currentPageTitle">Healthcare Dashboard</h2>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <!-- Search Bar -->
+                        <div class="hidden md:block relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                            <input type="text" placeholder="Search physicians or appointments..." 
+                                   class="block w-80 pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-medical-blue focus:border-medical-blue" 
+                                   data-event="input:handleSearch" data-bind="searchQuery">
+                        </div>
+                        
+                        <!-- Notifications -->
+                        <button class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full" data-event="click:toggleNotifications">
+                            <i class="fas fa-bell text-lg"></i>
+                            <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-400 ring-2 ring-white" data-bind="hasUnreadNotifications"></span>
+                        </button>
+
+                        <!-- User Profile -->
+                        <div class="relative">
+                            <button class="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-medical-blue" data-event="click:toggleUserMenu">
+                                <div class="w-8 h-8 bg-medical-blue rounded-full flex items-center justify-center">
+                                    <span class="text-white font-medium" data-bind="user.initials">JD</span>
+                                </div>
+                                <span class="ml-2 text-gray-700 font-medium" data-bind="user.name">John Doe</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <!-- @END_COMPONENT: TopNavigation -->
+
+            <!-- Main Dashboard Content -->
+            <main class="flex-1 overflow-y-auto bg-medical-gray-light">
+                <div class="py-6">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        
+                        <!-- Dashboard Stats -->
+                        <!-- @COMPONENT: DashboardStats -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
+                                <div class="p-6">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-12 h-12 bg-medical-blue-light rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-user-md text-medical-blue text-xl"></i>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <p class="text-sm font-medium text-gray-600">Total Physicians</p>
+                                            <p class="text-2xl font-semibold text-gray-900" data-bind="stats.totalPhysicians">12</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
+                                <div class="p-6">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-12 h-12 bg-medical-green-light rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-calendar-check text-medical-green text-xl"></i>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <p class="text-sm font-medium text-gray-600">Upcoming Appointments</p>
+                                            <p class="text-2xl font-semibold text-gray-900" data-bind="stats.upcomingAppointments">3</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
+                                <div class="p-6">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-bell text-yellow-600 text-xl"></i>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <p class="text-sm font-medium text-gray-600">Pending Reminders</p>
+                                            <p class="text-2xl font-semibold text-gray-900" data-bind="stats.pendingReminders">2</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
+                                <div class="p-6">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-clock text-purple-600 text-xl"></i>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <p class="text-sm font-medium text-gray-600">This Month</p>
+                                            <p class="text-2xl font-semibold text-gray-900" data-bind="stats.monthlyAppointments">8</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_COMPONENT: DashboardStats -->
+
+                        <!-- Main Dashboard Grid -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            
+                            <!-- Recent Physicians -->
+                            <!-- @COMPONENT: RecentPhysicians -->
+                            <div class="lg:col-span-2">
+                                <div class="bg-white shadow-sm rounded-lg border border-gray-200">
+                                    <div class="px-6 py-4 border-b border-gray-200">
+                                        <div class="flex items-center justify-between">
+                                            <h3 class="text-lg font-semibold text-gray-900">Your Physicians</h3>
+                                            <button class="text-medical-blue hover:text-medical-blue/80 text-sm font-medium" data-event="click:viewAllPhysicians">
+                                                View All
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="divide-y divide-gray-200" data-mock="true">
+                                        <!-- @MAP: physicians.map(physician => ( -->
+                                        <div class="p-6 hover:bg-gray-50 transition-colors">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center space-x-4">
+                                                    <div class="w-12 h-12 bg-medical-blue rounded-full flex items-center justify-center">
+                                                        <span class="text-white font-semibold" data-bind="physician.initials">DS</span>
+                                                    </div>
+                                                    <div>
+                                                        <h4 class="text-lg font-medium text-gray-900" data-bind="physician.name">Dr. Sarah Johnson</h4>
+                                                        <p class="text-medical-gray" data-bind="physician.specialty">Cardiology</p>
+                                                        <div class="flex items-center mt-1 text-sm text-medical-gray">
+                                                            <i class="fas fa-phone mr-2"></i>
+                                                            <span data-bind="physician.phone">(555) 123-4567</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="flex space-x-2">
+                                                    <button class="px-3 py-1 text-sm bg-medical-blue text-white rounded-md hover:bg-medical-blue/90" data-event="click:scheduleAppointment" data-implementation="Should open appointment scheduling modal">
+                                                        Schedule
+                                                    </button>
+                                                    <button class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200" data-event="click:editPhysician">
+                                                        Edit
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="p-6 hover:bg-gray-50 transition-colors">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center space-x-4">
+                                                    <div class="w-12 h-12 bg-medical-green rounded-full flex items-center justify-center">
+                                                        <span class="text-white font-semibold" data-bind="physician.initials">MR</span>
+                                                    </div>
+                                                    <div>
+                                                        <h4 class="text-lg font-medium text-gray-900" data-bind="physician.name">Dr. Michael Rodriguez</h4>
+                                                        <p class="text-medical-gray" data-bind="physician.specialty">Family Medicine</p>
+                                                        <div class="flex items-center mt-1 text-sm text-medical-gray">
+                                                            <i class="fas fa-phone mr-2"></i>
+                                                            <span data-bind="physician.phone">(555) 987-6543</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="flex space-x-2">
+                                                    <button class="px-3 py-1 text-sm bg-medical-blue text-white rounded-md hover:bg-medical-blue/90" data-event="click:scheduleAppointment">
+                                                        Schedule
+                                                    </button>
+                                                    <button class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200" data-event="click:editPhysician">
+                                                        Edit
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="p-6 hover:bg-gray-50 transition-colors">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center space-x-4">
+                                                    <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
+                                                        <span class="text-white font-semibold" data-bind="physician.initials">EL</span>
+                                                    </div>
+                                                    <div>
+                                                        <h4 class="text-lg font-medium text-gray-900" data-bind="physician.name">Dr. Emily Liu</h4>
+                                                        <p class="text-medical-gray" data-bind="physician.specialty">Dermatology</p>
+                                                        <div class="flex items-center mt-1 text-sm text-medical-gray">
+                                                            <i class="fas fa-phone mr-2"></i>
+                                                            <span data-bind="physician.phone">(555) 456-7890</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="flex space-x-2">
+                                                    <button class="px-3 py-1 text-sm bg-medical-blue text-white rounded-md hover:bg-medical-blue/90" data-event="click:scheduleAppointment">
+                                                        Schedule
+                                                    </button>
+                                                    <button class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200" data-event="click:editPhysician">
+                                                        Edit
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- @END_MAP )) -->
+                                    </div>
+                                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                                        <button class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-medical-gray hover:bg-gray-50" data-event="click:addNewPhysician" data-implementation="Should open add physician modal">
+                                            <i class="fas fa-plus mr-2"></i>
+                                            Add New Physician
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- @END_COMPONENT: RecentPhysicians -->
+
+                            <!-- Upcoming Appointments Sidebar -->
+                            <!-- @COMPONENT: UpcomingAppointments -->
+                            <div class="lg:col-span-1">
+                                <div class="bg-white shadow-sm rounded-lg border border-gray-200">
+                                    <div class="px-6 py-4 border-b border-gray-200">
+                                        <h3 class="text-lg font-semibold text-gray-900">Upcoming Appointments</h3>
+                                    </div>
+                                    <div class="divide-y divide-gray-200" data-mock="true">
+                                        <!-- @MAP: upcomingAppointments.map(appointment => ( -->
+                                        <div class="p-6">
+                                            <div class="flex items-start space-x-3">
+                                                <div class="w-3 h-3 bg-medical-blue rounded-full mt-2"></div>
+                                                <div class="flex-1">
+                                                    <p class="text-sm font-medium text-gray-900" data-bind="appointment.physicianName">Dr. Sarah Johnson</p>
+                                                    <p class="text-sm text-medical-gray" data-bind="appointment.specialty">Cardiology Checkup</p>
+                                                    <div class="mt-2 flex items-center text-sm text-medical-gray">
+                                                        <i class="fas fa-calendar mr-2"></i>
+                                                        <span data-bind="appointment.date">March 15, 2024</span>
+                                                    </div>
+                                                    <div class="flex items-center text-sm text-medical-gray">
+                                                        <i class="fas fa-clock mr-2"></i>
+                                                        <span data-bind="appointment.time">2:30 PM</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="p-6">
+                                            <div class="flex items-start space-x-3">
+                                                <div class="w-3 h-3 bg-medical-green rounded-full mt-2"></div>
+                                                <div class="flex-1">
+                                                    <p class="text-sm font-medium text-gray-900" data-bind="appointment.physicianName">Dr. Michael Rodriguez</p>
+                                                    <p class="text-sm text-medical-gray" data-bind="appointment.specialty">Annual Physical</p>
+                                                    <div class="mt-2 flex items-center text-sm text-medical-gray">
+                                                        <i class="fas fa-calendar mr-2"></i>
+                                                        <span data-bind="appointment.date">March 22, 2024</span>
+                                                    </div>
+                                                    <div class="flex items-center text-sm text-medical-gray">
+                                                        <i class="fas fa-clock mr-2"></i>
+                                                        <span data-bind="appointment.time">10:00 AM</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="p-6">
+                                            <div class="flex items-start space-x-3">
+                                                <div class="w-3 h-3 bg-yellow-500 rounded-full mt-2"></div>
+                                                <div class="flex-1">
+                                                    <p class="text-sm font-medium text-gray-900" data-bind="appointment.physicianName">Dr. Emily Liu</p>
+                                                    <p class="text-sm text-medical-gray" data-bind="appointment.specialty">Skin Consultation</p>
+                                                    <div class="mt-2 flex items-center text-sm text-medical-gray">
+                                                        <i class="fas fa-calendar mr-2"></i>
+                                                        <span data-bind="appointment.date">March 28, 2024</span>
+                                                    </div>
+                                                    <div class="flex items-center text-sm text-medical-gray">
+                                                        <i class="fas fa-clock mr-2"></i>
+                                                        <span data-bind="appointment.time">3:45 PM</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- @END_MAP )) -->
+                                    </div>
+                                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                                        <button class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-medical-gray hover:bg-gray-50" data-event="click:scheduleNewAppointment" data-implementation="Should open appointment scheduling modal">
+                                            <i class="fas fa-plus mr-2"></i>
+                                            Schedule Appointment
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Quick Actions -->
+                                <!-- @COMPONENT: QuickActions -->
+                                <div class="mt-6 bg-white shadow-sm rounded-lg border border-gray-200">
+                                    <div class="px-6 py-4 border-b border-gray-200">
+                                        <h3 class="text-lg font-semibold text-gray-900">Quick Actions</h3>
+                                    </div>
+                                    <div class="p-6 space-y-3">
+                                        <button class="w-full flex items-center px-4 py-3 text-left bg-medical-blue-light text-medical-blue rounded-lg hover:bg-medical-blue hover:text-white transition-colors" data-event="click:addPhysician">
+                                            <i class="fas fa-user-plus mr-3"></i>
+                                            Add New Physician
+                                        </button>
+                                        <button class="w-full flex items-center px-4 py-3 text-left bg-medical-green-light text-medical-green rounded-lg hover:bg-medical-green hover:text-white transition-colors" data-event="click:scheduleAppointment">
+                                            <i class="fas fa-calendar-plus mr-3"></i>
+                                            Schedule Appointment
+                                        </button>
+                                        <button class="w-full flex items-center px-4 py-3 text-left bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200" data-event="click:exportData">
+                                            <i class="fas fa-download mr-3"></i>
+                                            Export Data
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- @END_COMPONENT: QuickActions -->
+                            </div>
+                            <!-- @END_COMPONENT: UpcomingAppointments -->
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <!-- @COMPONENT: RecentActivity -->
+                        <div class="mt-8">
+                            <div class="bg-white shadow-sm rounded-lg border border-gray-200">
+                                <div class="px-6 py-4 border-b border-gray-200">
+                                    <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
+                                </div>
+                                <div class="divide-y divide-gray-200" data-mock="true">
+                                    <!-- @MAP: recentActivity.map(activity => ( -->
+                                    <div class="p-6">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="w-10 h-10 bg-medical-blue-light rounded-full flex items-center justify-center">
+                                                <i class="fas fa-user-plus text-medical-blue"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="text-sm text-gray-900">
+                                                    <span class="font-medium" data-bind="activity.action">Added new physician</span>
+                                                    <span class="text-medical-gray" data-bind="activity.target">Dr. Emily Liu (Dermatology)</span>
+                                                </p>
+                                                <p class="text-xs text-medical-gray" data-bind="activity.timestamp">2 hours ago</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="p-6">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="w-10 h-10 bg-medical-green-light rounded-full flex items-center justify-center">
+                                                <i class="fas fa-calendar-check text-medical-green"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="text-sm text-gray-900">
+                                                    <span class="font-medium" data-bind="activity.action">Scheduled appointment with</span>
+                                                    <span class="text-medical-gray" data-bind="activity.target">Dr. Sarah Johnson</span>
+                                                </p>
+                                                <p class="text-xs text-medical-gray" data-bind="activity.timestamp">Yesterday</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="p-6">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-edit text-yellow-600"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="text-sm text-gray-900">
+                                                    <span class="font-medium" data-bind="activity.action">Updated contact info for</span>
+                                                    <span class="text-medical-gray" data-bind="activity.target">Dr. Michael Rodriguez</span>
+                                                </p>
+                                                <p class="text-xs text-medical-gray" data-bind="activity.timestamp">3 days ago</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- @END_MAP )) -->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_COMPONENT: RecentActivity -->
+                    </div>
+                </div>
+            </main>
+        </div>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+    <!-- @END_COMPONENT: AppLayout -->
+
+    <!-- Add Physician Modal -->
+    <!-- @COMPONENT: AddPhysicianModal -->
+    <div id="addPhysicianModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" data-state="isAddPhysicianModalOpen">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Add New Physician</h3>
+                    <button class="text-gray-400 hover:text-gray-600" data-event="click:closeAddPhysicianModal">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <form class="space-y-6" data-event="submit:handleAddPhysician" data-implementation="Should validate form before submission">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                            <input type="text" id="firstName" name="firstName" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-medical-blue focus:border-medical-blue"
+                                   data-bind="physicianForm.firstName">
+                        </div>
+                        <div>
+                            <label for="lastName" class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                            <input type="text" id="lastName" name="lastName" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-medical-blue focus:border-medical-blue"
+                                   data-bind="physicianForm.lastName">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="specialty" class="block text-sm font-medium text-gray-700 mb-2">Medical Specialty</label>
+                        <select id="specialty" name="specialty" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-medical-blue focus:border-medical-blue"
+                                data-bind="physicianForm.specialty">
+                            <option value="">Select a specialty</option>
+                            <option value="cardiology">Cardiology</option>
+                            <option value="dermatology">Dermatology</option>
+                            <option value="family-medicine">Family Medicine</option>
+                            <option value="neurology">Neurology</option>
+                            <option value="orthopedics">Orthopedics</option>
+                            <option value="pediatrics">Pediatrics</option>
+                            <option value="psychiatry">Psychiatry</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" required
+                                   placeholder="(555) 123-4567"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-medical-blue focus:border-medical-blue"
+                                   data-bind="physicianForm.phone">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                            <input type="email" id="email" name="email"
+                                   placeholder="doctor@hospital.com"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-medical-blue focus:border-medical-blue"
+                                   data-bind="physicianForm.email">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="address" class="block text-sm font-medium text-gray-700 mb-2">Office Address</label>
+                        <textarea id="address" name="address" rows="3"
+                                  placeholder="123 Medical Center Dr, Suite 100&#10;City, State 12345"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-medical-blue focus:border-medical-blue"
+                                  data-bind="physicianForm.address"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="officeHours" class="block text-sm font-medium text-gray-700 mb-2">Office Hours</label>
+                        <textarea id="officeHours" name="officeHours" rows="3"
+                                  placeholder="Monday - Friday: 9:00 AM - 5:00 PM&#10;Saturday: 9:00 AM - 1:00 PM&#10;Sunday: Closed"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-medical-blue focus:border-medical-blue"
+                                  data-bind="physicianForm.officeHours"></textarea>
+                    </div>
+
+                    <div class="flex items-center justify-end space-x-4 pt-6">
+                        <button type="button" 
+                                class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-medical-blue"
+                                data-event="click:closeAddPhysicianModal">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-medical-blue hover:bg-medical-blue/90 focus:outline-none focus:ring-2 focus:ring-medical-blue">
+                            Add Physician
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: AddPhysicianModal -->
+
+    <!-- Schedule Appointment Modal -->
+    <!-- @COMPONENT: ScheduleAppointmentModal -->
+    <div id="scheduleModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" data-state="isScheduleModalOpen">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Schedule Appointment</h3>
+                    <button class="text-gray-400 hover:text-gray-600" data-event="click:closeScheduleModal">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <form class="space-y-6" data-event="submit:handleScheduleAppointment" data-implementation="Should validate form and create appointment">
+                    <div>
+                        <label for="physician" class="block text-sm font-medium text-gray-700 mb-2">Select Physician</label>
+                        <select id="physician" name="physician" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-medical-blue focus:border-medical-blue"
+                                data-bind="appointmentForm.physicianId">
+                            <option value="">Choose a physician</option>
+                            <option value="1">Dr. Sarah Johnson - Cardiology</option>
+                            <option value="2">Dr. Michael Rodriguez - Family Medicine</option>
+                            <option value="3">Dr. Emily Liu - Dermatology</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="appointmentDate" class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                            <input type="date" id="appointmentDate" name="appointmentDate" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-medical-blue focus:border-medical-blue"
+                                   data-bind="appointmentForm.date">
+                        </div>
+                        <div>
+                            <label for="appointmentTime" class="block text-sm font-medium text-gray-700 mb-2">Time</label>
+                            <select id="appointmentTime" name="appointmentTime" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-medical-blue focus:border-medical-blue"
+                                    data-bind="appointmentForm.time">
+                                <option value="">Select time</option>
+                                <option value="09:00">9:00 AM</option>
+                                <option value="09:30">9:30 AM</option>
+                                <option value="10:00">10:00 AM</option>
+                                <option value="10:30">10:30 AM</option>
+                                <option value="11:00">11:00 AM</option>
+                                <option value="11:30">11:30 AM</option>
+                                <option value="14:00">2:00 PM</option>
+                                <option value="14:30">2:30 PM</option>
+                                <option value="15:00">3:00 PM</option>
+                                <option value="15:30">3:30 PM</option>
+                                <option value="16:00">4:00 PM</option>
+                                <option value="16:30">4:30 PM</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="appointmentType" class="block text-sm font-medium text-gray-700 mb-2">Appointment Type</label>
+                        <select id="appointmentType" name="appointmentType" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-medical-blue focus:border-medical-blue"
+                                data-bind="appointmentForm.type">
+                            <option value="">Select appointment type</option>
+                            <option value="consultation">Consultation</option>
+                            <option value="checkup">Regular Checkup</option>
+                            <option value="follow-up">Follow-up</option>
+                            <option value="urgent">Urgent Care</option>
+                            <option value="procedure">Procedure</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="appointmentNotes" class="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
+                        <textarea id="appointmentNotes" name="appointmentNotes" rows="3"
+                                  placeholder="Any specific concerns or notes for the appointment..."
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-medical-blue focus:border-medical-blue"
+                                  data-bind="appointmentForm.notes"></textarea>
+                    </div>
+
+                    <div class="flex items-center justify-end space-x-4 pt-6">
+                        <button type="button" 
+                                class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-medical-blue"
+                                data-event="click:closeScheduleModal">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-medical-blue hover:bg-medical-blue/90 focus:outline-none focus:ring-2 focus:ring-medical-blue">
+                            Schedule Appointment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: ScheduleAppointmentModal -->
+
+    <script>
+        // TODO: Implement business logic, API calls, or state management
+        // Modal functionality for demo purposes
+        (function() {
+            // Demo modal functionality
+            const addPhysicianModal = document.getElementById('addPhysicianModal');
+            const scheduleModal = document.getElementById('scheduleModal');
+
+            // Add Physician Modal
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('[data-event*="addNewPhysician"], [data-event*="addPhysician"]')) {
+                    addPhysicianModal.classList.remove('hidden');
+                }
+                if (e.target.closest('[data-event*="closeAddPhysicianModal"]')) {
+                    addPhysicianModal.classList.add('hidden');
+                }
+            });
+
+            // Schedule Appointment Modal
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('[data-event*="scheduleAppointment"], [data-event*="scheduleNewAppointment"]')) {
+                    scheduleModal.classList.remove('hidden');
+                }
+                if (e.target.closest('[data-event*="closeScheduleModal"]')) {
+                    scheduleModal.classList.add('hidden');
+                }
+            });
+
+            // Close modals when clicking outside
+            document.addEventListener('click', function(e) {
+                if (e.target === addPhysicianModal) {
+                    addPhysicianModal.classList.add('hidden');
+                }
+                if (e.target === scheduleModal) {
+                    scheduleModal.classList.add('hidden');
+                }
+            });
+
+            // Form submissions (demo)
+            document.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const form = e.target;
+                
+                if (form.closest('#addPhysicianModal')) {
+                    // TODO: Implement physician creation logic
+                    console.log('Add physician form submitted');
+                    addPhysicianModal.classList.add('hidden');
+                    form.reset();
+                } else if (form.closest('#scheduleModal')) {
+                    // TODO: Implement appointment scheduling logic
+                    console.log('Schedule appointment form submitted');
+                    scheduleModal.classList.add('hidden');
+                    form.reset();
+                }
+            });
+
+            // Mobile menu toggle (placeholder)
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('[data-event*="toggleMobileMenu"]')) {
+                    // TODO: Implement mobile menu toggle
+                    console.log('Mobile menu toggle clicked');
+                }
+            });
+
+            // Search functionality (placeholder)
+            document.addEventListener('input', function(e) {
+                if (e.target.matches('[data-event*="handleSearch"]')) {
+                    // TODO: Implement search functionality
+                    console.log('Search query:', e.target.value);
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

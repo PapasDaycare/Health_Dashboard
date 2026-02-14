@@ -1,27 +1,32 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus, Search, Phone, Mail, MapPin, Users } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth";
-import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/lib/auth";
+import { queryClient, apiRequest, fetchWithUser } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { type Physician, type InsertPhysician } from "@shared/schema";
+import { type Physician, type InsertPhysician, type InsertAppointment } from "@shared/schema";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import AddPhysicianModal from "@/components/physicians/add-physician-modal";
+import ScheduleAppointmentModal from "@/components/appointments/schedule-appointment-modal";
 
 export default function Physicians() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [selectedPhysicianId, setSelectedPhysicianId] = useState<string | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
   
-  const user = getCurrentUser();
+  const { user } = useAuth();
+  const userId = user?.id || "";
   const { toast } = useToast();
 
   // Fetch physicians
   const { data: physicians = [], isLoading } = useQuery<Physician[]>({
-    queryKey: ["/api/physicians", user.id],
-    queryFn: () => fetch(`/api/physicians?userId=${user.id}`).then(res => res.json()),
+    queryKey: ["/api/physicians", userId],
+    queryFn: () => fetchWithUser<Physician[]>("/api/physicians"),
+    enabled: !!userId,
   });
 
   // Add physician mutation
@@ -30,10 +35,31 @@ export default function Physicians() {
     onSuccess: () => {
       toast({ title: "Physician added successfully" });
       setIsAddModalOpen(false);
-      queryClient.invalidateQueries({ queryKey: ["/api/physicians"] });
+      if (!userId) {
+        return;
+      }
+      queryClient.invalidateQueries({ queryKey: ["/api/physicians", userId] });
     },
     onError: () => {
       toast({ title: "Failed to add physician", variant: "destructive" });
+    },
+  });
+
+  const scheduleAppointmentMutation = useMutation({
+    mutationFn: (data: InsertAppointment) => apiRequest("POST", "/api/appointments", data),
+    onSuccess: () => {
+      toast({ title: "Appointment scheduled successfully" });
+      setIsScheduleModalOpen(false);
+      setSelectedPhysicianId(undefined);
+      if (!userId) {
+        return;
+      }
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments/upcoming", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats", userId] });
+    },
+    onError: () => {
+      toast({ title: "Failed to schedule appointment", variant: "destructive" });
     },
   });
 
@@ -57,6 +83,15 @@ export default function Physicians() {
       "bg-indigo-500"
     ];
     return colors[index % colors.length];
+  };
+
+  const handleScheduleAppointment = (physicianId?: string) => {
+    setSelectedPhysicianId(physicianId);
+    setIsScheduleModalOpen(true);
+  };
+
+  const handleEditPhysician = (physicianId: string) => {
+    toast({ title: "Edit physician functionality coming soon" });
   };
 
   if (isLoading) {
@@ -185,6 +220,7 @@ export default function Physicians() {
                       size="sm"
                       className="flex-1 bg-medical-blue text-white hover:bg-medical-blue/90 text-xs sm:text-sm"
                       data-testid={`button-schedule-${physician.id}`}
+                      onClick={() => handleScheduleAppointment(physician.id)}
                     >
                       Schedule
                     </Button>
@@ -193,6 +229,7 @@ export default function Physicians() {
                       variant="outline"
                       className="flex-1 text-xs sm:text-sm"
                       data-testid={`button-edit-${physician.id}`}
+                      onClick={() => handleEditPhysician(physician.id)}
                     >
                       Edit
                     </Button>
@@ -210,6 +247,15 @@ export default function Physicians() {
         onOpenChange={setIsAddModalOpen}
         onSubmit={addPhysicianMutation.mutate}
         isLoading={addPhysicianMutation.isPending}
+      />
+
+      <ScheduleAppointmentModal
+        open={isScheduleModalOpen}
+        onOpenChange={setIsScheduleModalOpen}
+        onSubmit={scheduleAppointmentMutation.mutate}
+        physicians={physicians}
+        selectedPhysicianId={selectedPhysicianId}
+        isLoading={scheduleAppointmentMutation.isPending}
       />
     </div>
   );

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Search, Bell, Menu, Heart, Home, Users, Calendar } from "lucide-react";
+import { useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { getCurrentUser, getUserInitials } from "@/lib/auth";
+import { useAuth, getUserInitials } from "@/lib/auth";
 // import MobileNav from "./mobile-nav";
 
 interface HeaderProps {
@@ -13,7 +14,23 @@ interface HeaderProps {
 export default function Header({ title }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const user = getCurrentUser();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { user, logout } = useAuth();
+  const [, setLocation] = useLocation();
+
+  const handleLogout = async () => {
+    if (isLoggingOut) {
+      return;
+    }
+
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      setLocation("/login");
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
   
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
@@ -110,22 +127,36 @@ export default function Header({ title }: HeaderProps) {
           </Button>
 
           {/* User Profile */}
-          <div className="relative">
+          {user && (
+            <div className="relative">
+              <Button
+                variant="ghost"
+                className="flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-medical-blue p-1 sm:p-2"
+                data-testid="button-user-menu"
+              >
+                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-medical-blue rounded-full flex items-center justify-center">
+                  <span className="text-white font-medium text-xs sm:text-sm">
+                    {getUserInitials(user)}
+                  </span>
+                </div>
+                <span className="hidden sm:block ml-2 text-gray-700 font-medium text-sm">
+                  {[user.firstName, user.lastName].filter(Boolean).join(" ")}
+                </span>
+              </Button>
+            </div>
+          )}
+          {user && (
             <Button
               variant="ghost"
-              className="flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-medical-blue p-1 sm:p-2"
-              data-testid="button-user-menu"
+              size="sm"
+              className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              data-testid="button-logout"
             >
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-medical-blue rounded-full flex items-center justify-center">
-                <span className="text-white font-medium text-xs sm:text-sm">
-                  {getUserInitials(user)}
-                </span>
-              </div>
-              <span className="hidden sm:block ml-2 text-gray-700 font-medium text-sm">
-                {user.firstName} {user.lastName}
-              </span>
+              {isLoggingOut ? "Signing out..." : "Sign out"}
             </Button>
-          </div>
+          )}
         </div>
       </div>
     </header>
