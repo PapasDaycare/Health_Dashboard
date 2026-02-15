@@ -42,13 +42,15 @@ export class MemStorage implements IStorage {
     this.appointments = new Map();
     this.reminders = new Map();
     
-    // Only load sample data in development
-    if (process.env.NODE_ENV === 'development') {
-      this.initializeSampleData().catch(console.error);
-    }
+    // Seed demo data in any environment (Render is production, otherwise no demo user exists)
+    this.initializeSampleData().catch(console.error);
   }
 
   private async initializeSampleData() {
+    // Prevent duplicate seeding
+    const existingDemo = Array.from(this.users.values()).find(u => u.username === "demo");
+    if (existingDemo) return;
+
     // Create demo user directly
     const demoUser: User = {
       id: "demo-user-id",
