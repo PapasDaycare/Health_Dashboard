@@ -8,6 +8,8 @@ import { setupVite, serveStatic, log } from "./vite";
 const app = express();
 app.set("trust proxy", 1);
 
+app.get("/api/version", (_req, res) => res.json({ commit: "0b97a44" }));
+
 // DEV SESSION USER BYPASS (terminal-added)
 if (process.env.NODE_ENV === "development" && process.env.AUTH_BYPASS === "true") {
   app.use((req: any, _res: any, next: any) => {
