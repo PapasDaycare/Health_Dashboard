@@ -70,7 +70,7 @@ export const setupAuth = (app: Express, storage: IStorage) => {
       cookie: {
         httpOnly: true,
         sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
+        secure: false,
         maxAge: 7 * 24 * 60 * 60 * 1000,
       },
     }),
