@@ -19,17 +19,18 @@ const toSafeUser = (user: { password?: string }) => {
   return safeUser;
 };
 
+/**
+ * Returns the current session userId (if logged in).
+ * In development, auto-sets a demo userId.
+ */
 const ensureSessionUser = (req: Request): string | undefined => {
   const sessionData = req.session;
-  if (!sessionData) {
-    return undefined;
-  }
+  if (!sessionData) return undefined;
 
   const current = sessionData.userId;
-  if (current) {
-    return current;
-  }
+  if (current) return current;
 
+  // 🚪 DEV BYPASS (your npm run dev sets NODE_ENV=development)
   if (process.env.NODE_ENV === "development") {
     sessionData.userId = "demo-user-id";
     return sessionData.userId;
@@ -47,7 +48,13 @@ export const setupAuth = (app: Express, storage: IStorage) => {
   const databaseUrl = process.env.DATABASE_URL || "";
   const sessionStore = databaseUrl
     ? new PgSessionStore({
-        pool: new Pool({ connectionString: databaseUrl }),
+        pool: new Pool({
+          connectionString: databaseUrl,
+          ssl:
+            process.env.NODE_ENV === "production"
+              ? { rejectUnauthorized: false }
+              : undefined,
+        }),
         createTableIfMissing: true,
       })
     : new MemoryStore({
@@ -73,6 +80,7 @@ export const setupAuth = (app: Express, storage: IStorage) => {
     try {
       const credentials = loginSchema.parse(req.body);
       const user = await storage.getUserByUsername(credentials.username);
+
       if (!user || user.password !== credentials.password) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
@@ -95,6 +103,16 @@ export const setupAuth = (app: Express, storage: IStorage) => {
 
   app.get("/api/me", async (req: Request, res: Response) => {
     const userId = ensureSessionUser(req);
+
+    // 🚪 DEV BYPASS: return a demo user without DB lookup
+    if (process.env.NODE_ENV === "development") {
+      return res.json({
+        id: "demo-user-id",
+        username: "demo",
+        role: "admin",
+      });
+    }
+
     if (!userId) {
       return res.status(401).json({ message: "Not authenticated" });
     }
