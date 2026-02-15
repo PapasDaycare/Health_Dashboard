@@ -27,13 +27,13 @@ const ensureSessionUser = (req: Request): string | undefined => {
   const sessionData = req.session;
   if (!sessionData) return undefined;
 
-  const current = sessionData.userId;
+  const current = (sessionData as any).userId as string | undefined;
   if (current) return current;
 
   // 🚪 DEV BYPASS (your npm run dev sets NODE_ENV=development)
   if (process.env.NODE_ENV === "development") {
-    sessionData.userId = "demo-user-id";
-    return sessionData.userId;
+    (sessionData as any).userId = "demo-user-id";
+    return (sessionData as any).userId as string;
   }
 
   return undefined;
@@ -70,7 +70,9 @@ export const setupAuth = (app: Express, storage: IStorage) => {
       cookie: {
         httpOnly: true,
         sameSite: "lax",
-        secure: false,
+        // If you serve over HTTPS in production, you should set secure=true.
+        // Keeping false avoids local/dev issues.
+        secure: process.env.NODE_ENV === "production",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       },
     }),
@@ -81,21 +83,23 @@ export const setupAuth = (app: Express, storage: IStorage) => {
       const credentials = loginSchema.parse(req.body);
       const user = await storage.getUserByUsername(credentials.username);
 
-      if (!user || user.password !== credentials.password) {
+      if (!user || (user as any).password !== credentials.password) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
       res.setHeader("x-hv-login-route", "setupAuth");
-      req.session.userId = user.id;
+      (req.session as any).userId = (user as any).id;
 
       return req.session.save((err) => {
         if (err) return res.status(500).json({ message: "Session save failed" });
-        return res.json(toSafeUser(user));
-      });
+        return res.json(toSafeUser(user as any));
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+        return res.status(400).json({
+          message: "Invalid data",
+          errors: error.errors,
+        });
       }
       return res.status(500).json({ message: "Login failed" });
     }
@@ -128,7 +132,7 @@ export const setupAuth = (app: Express, storage: IStorage) => {
       return res.status(401).json({ message: "Not authenticated" });
     }
 
-    return res.json(toSafeUser(user));
+    return res.json(toSafeUser(user as any));
   });
 };
 
