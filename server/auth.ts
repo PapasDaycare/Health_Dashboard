@@ -85,6 +85,7 @@ export const setupAuth = (app: Express, storage: IStorage) => {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
+      res.setHeader("x-hv-login-route", "setupAuth");
       req.session.userId = user.id;
 
       return req.session.save((err) => {
