@@ -91,6 +91,7 @@ export const setupAuth = (app: Express, storage: IStorage) => {
         if (err) return res.status(500).json({ message: "Session save failed" });
         return res.json(toSafeUser(user));
       });
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
