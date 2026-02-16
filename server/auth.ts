@@ -5,6 +5,7 @@ import connectPgSimple from "connect-pg-simple";
 import { Pool } from "pg";
 import { z } from "zod";
 import type { IStorage } from "./storage";
+import bcrypt from "bcrypt";
 
 const MemoryStore = createMemoryStore(session);
 const PgSessionStore = connectPgSimple(session);
@@ -31,11 +32,6 @@ const ensureSessionUser = (req: Request): string | undefined => {
   if (current) return current;
 
   // 🚪 DEV BYPASS (your npm run dev sets NODE_ENV=development)
-  if (process.env.NODE_ENV === "development") {
-    (sessionData as any).userId = "demo-user-id";
-    return (sessionData as any).userId as string;
-  }
-
   return undefined;
 };
 
@@ -61,6 +57,11 @@ export const setupAuth = (app: Express, storage: IStorage) => {
         checkPeriod: 24 * 60 * 60 * 1000,
       });
 
+  // Render sits behind a proxy/load balancer. This is important for secure cookies.
+  if (process.env.NODE_ENV === "production") {
+    app.set("trust proxy", 1);
+  }
+
   app.use(
     session({
       secret: sessionSecret || "dev-session-secret",
@@ -70,8 +71,6 @@ export const setupAuth = (app: Express, storage: IStorage) => {
       cookie: {
         httpOnly: true,
         sameSite: "lax",
-        // If you serve over HTTPS in production, you should set secure=true.
-        // Keeping false avoids local/dev issues.
         secure: process.env.NODE_ENV === "production",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       },
@@ -83,7 +82,15 @@ export const setupAuth = (app: Express, storage: IStorage) => {
       const credentials = loginSchema.parse(req.body);
       const user = await storage.getUserByUsername(credentials.username);
 
-      if (!user || (user as any).password !== credentials.password) {
+      if (!user) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const ok = await bcrypt.compare(
+        credentials.password,
+        (user as any).password,
+      );
+      if (!ok) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
@@ -91,7 +98,8 @@ export const setupAuth = (app: Express, storage: IStorage) => {
       (req.session as any).userId = (user as any).id;
 
       return req.session.save((err) => {
-        if (err) return res.status(500).json({ message: "Session save failed" });
+        if (err)
+          return res.status(500).json({ message: "Session save failed" });
         return res.json(toSafeUser(user as any));
       });
     } catch (error) {
@@ -114,15 +122,6 @@ export const setupAuth = (app: Express, storage: IStorage) => {
   app.get("/api/me", async (req: Request, res: Response) => {
     const userId = ensureSessionUser(req);
 
-    // 🚪 DEV BYPASS: return a demo user without DB lookup
-    if (process.env.NODE_ENV === "development") {
-      return res.json({
-        id: "demo-user-id",
-        username: "demo",
-        role: "admin",
-      });
-    }
-
     if (!userId) {
       return res.status(401).json({ message: "Not authenticated" });
     }
@@ -133,6 +132,14 @@ export const setupAuth = (app: Express, storage: IStorage) => {
     }
 
     return res.json(toSafeUser(user as any));
+  });
+
+  // TEMP: remove after confirming env on Render
+  app.get("/api/env", (_req: Request, res: Response) => {
+    res.json({
+      NODE_ENV: process.env.NODE_ENV ?? null,
+      RENDER: process.env.RENDER ?? null,
+    });
   });
 };
 
