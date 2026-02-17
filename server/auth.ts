@@ -5,7 +5,7 @@ import connectPgSimple from "connect-pg-simple";
 import { Pool } from "pg";
 import { z } from "zod";
 import type { IStorage } from "./storage";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 const MemoryStore = createMemoryStore(session);
 const PgSessionStore = connectPgSimple(session);
