@@ -17,11 +17,9 @@ function Router() {
   const { user, isLoading } = useAuth();
   const [location, setLocation] = useLocation();
 
-  useEffect(() => {
-    if (!isLoading && !user && location !== "/login") {
-      setLocation("/login");
-    }
-  }, [isLoading, location, setLocation, user]);
+useEffect(() => {
+  // Auth disabled for development
+}, []);
 
   if (isLoading) {
     return (
@@ -31,7 +29,8 @@ function Router() {
     );
   }
 
-  if (!user && location !== "/login") {
+if (false && !user && location !== "/login") {
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-sm text-gray-500">Redirecting...</div>
