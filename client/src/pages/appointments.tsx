@@ -17,22 +17,19 @@ export default function Appointments() {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   
-  const { user } = useAuth();
-  const userId = user?.id || "";
+  useAuth();
   const { toast } = useToast();
 
   // Fetch appointments
   const { data: appointments = [], isLoading: appointmentsLoading } = useQuery<Appointment[]>({
-    queryKey: ["/api/appointments", userId],
+    queryKey: ["/api/appointments"],
     queryFn: () => fetchWithUser<Appointment[]>("/api/appointments"),
-    enabled: !!userId,
   });
 
   // Fetch physicians
   const { data: physicians = [], isLoading: physiciansLoading } = useQuery<Physician[]>({
-    queryKey: ["/api/physicians", userId],
+    queryKey: ["/api/physicians"],
     queryFn: () => fetchWithUser<Physician[]>("/api/physicians"),
-    enabled: !!userId,
   });
 
   // Schedule appointment mutation
@@ -41,12 +38,9 @@ export default function Appointments() {
     onSuccess: () => {
       toast({ title: "Appointment scheduled successfully" });
       setIsScheduleModalOpen(false);
-      if (!userId) {
-        return;
-      }
-      queryClient.invalidateQueries({ queryKey: ["/api/appointments", userId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/appointments/upcoming", userId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments/upcoming"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
     },
     onError: () => {
       toast({ title: "Failed to schedule appointment", variant: "destructive" });

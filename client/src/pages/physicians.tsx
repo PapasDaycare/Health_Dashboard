@@ -18,15 +18,13 @@ export default function Physicians() {
   const [selectedPhysicianId, setSelectedPhysicianId] = useState<string | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
   
-  const { user } = useAuth();
-  const userId = user?.id || "";
+  useAuth();
   const { toast } = useToast();
 
   // Fetch physicians
   const { data: physicians = [], isLoading } = useQuery<Physician[]>({
-    queryKey: ["/api/physicians", userId],
+    queryKey: ["/api/physicians"],
     queryFn: () => fetchWithUser<Physician[]>("/api/physicians"),
-    enabled: !!userId,
   });
 
   // Add physician mutation
@@ -35,10 +33,7 @@ export default function Physicians() {
     onSuccess: () => {
       toast({ title: "Physician added successfully" });
       setIsAddModalOpen(false);
-      if (!userId) {
-        return;
-      }
-      queryClient.invalidateQueries({ queryKey: ["/api/physicians", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/physicians"] });
     },
     onError: () => {
       toast({ title: "Failed to add physician", variant: "destructive" });
@@ -51,12 +46,9 @@ export default function Physicians() {
       toast({ title: "Appointment scheduled successfully" });
       setIsScheduleModalOpen(false);
       setSelectedPhysicianId(undefined);
-      if (!userId) {
-        return;
-      }
-      queryClient.invalidateQueries({ queryKey: ["/api/appointments", userId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/appointments/upcoming", userId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments/upcoming"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
     },
     onError: () => {
       toast({ title: "Failed to schedule appointment", variant: "destructive" });

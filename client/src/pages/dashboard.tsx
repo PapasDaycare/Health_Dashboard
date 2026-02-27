@@ -25,29 +25,25 @@ export default function Dashboard() {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [selectedPhysicianId, setSelectedPhysicianId] = useState<string | undefined>();
   
-  const { user } = useAuth();
-  const userId = user?.id || "";
+  useAuth();
   const { toast } = useToast();
 
   // Fetch dashboard stats
   const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
-    queryKey: ["/api/dashboard/stats", userId],
+    queryKey: ["/api/dashboard/stats"],
     queryFn: () => fetchWithUser<DashboardStats>("/api/dashboard/stats"),
-    enabled: !!userId,
   });
 
   // Fetch physicians
   const { data: physicians = [], isLoading: physiciansLoading } = useQuery<Physician[]>({
-    queryKey: ["/api/physicians", userId],
+    queryKey: ["/api/physicians"],
     queryFn: () => fetchWithUser<Physician[]>("/api/physicians"),
-    enabled: !!userId,
   });
 
   // Fetch upcoming appointments
   const { data: upcomingAppointments = [], isLoading: appointmentsLoading } = useQuery<Appointment[]>({
-    queryKey: ["/api/appointments/upcoming", userId],
+    queryKey: ["/api/appointments/upcoming"],
     queryFn: () => fetchWithUser<Appointment[]>("/api/appointments/upcoming"),
-    enabled: !!userId,
   });
 
   // Add physician mutation
@@ -56,11 +52,8 @@ export default function Dashboard() {
     onSuccess: () => {
       toast({ title: "Physician added successfully" });
       setIsAddPhysicianModalOpen(false);
-      if (!userId) {
-        return;
-      }
-      queryClient.invalidateQueries({ queryKey: ["/api/physicians", userId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/physicians"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
     },
     onError: () => {
       toast({ title: "Failed to add physician", variant: "destructive" });
@@ -74,12 +67,9 @@ export default function Dashboard() {
       toast({ title: "Appointment scheduled successfully" });
       setIsScheduleModalOpen(false);
       setSelectedPhysicianId(undefined);
-      if (!userId) {
-        return;
-      }
-      queryClient.invalidateQueries({ queryKey: ["/api/appointments", userId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/appointments/upcoming", userId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments/upcoming"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
     },
     onError: () => {
       toast({ title: "Failed to schedule appointment", variant: "destructive" });
