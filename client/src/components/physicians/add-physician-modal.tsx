@@ -160,6 +160,7 @@ export default function AddPhysicianModal({
                     <FormControl>
                       <Input 
                         {...field} 
+                        value={field.value ?? ""}
                         type="email"
                         placeholder="doctor@hospital.com"
                         data-testid="input-email"
@@ -180,6 +181,7 @@ export default function AddPhysicianModal({
                   <FormControl>
                     <Textarea 
                       {...field} 
+                      value={field.value ?? ""}
                       rows={3}
                       placeholder="123 Medical Center Dr, Suite 100&#10;City, State 12345"
                       data-testid="textarea-address"
@@ -199,6 +201,7 @@ export default function AddPhysicianModal({
                   <FormControl>
                     <Textarea 
                       {...field} 
+                      value={field.value ?? ""}
                       rows={3}
                       placeholder="Monday - Friday: 9:00 AM - 5:00 PM&#10;Saturday: 9:00 AM - 1:00 PM&#10;Sunday: Closed"
                       data-testid="textarea-office-hours"

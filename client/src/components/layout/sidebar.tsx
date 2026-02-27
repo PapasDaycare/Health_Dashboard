@@ -1,11 +1,12 @@
 import { Link, useLocation } from "wouter";
-import { Heart, Home, Users, Calendar, Bell, Settings } from "lucide-react";
+import { Heart, Home, Users, Calendar, Bell, Settings, Pill } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Physicians", href: "/physicians", icon: Users },
   { name: "Appointments", href: "/appointments", icon: Calendar },
+  { name: "Medications", href: "/medications", icon: Pill },
   { name: "Reminders", href: "/reminders", icon: Bell },
   { name: "Settings", href: "/settings", icon: Settings },
 ];

@@ -10,6 +10,10 @@ import Dashboard from "@/pages/dashboard";
 import Physicians from "@/pages/physicians";
 import Appointments from "@/pages/appointments";
 import Login from "@/pages/login";
+import MedicationsPage from "@/pages/medications";
+import MedicationWizardPage from "@/pages/medications-new";
+import MedicationsPrintPage from "@/pages/medications-print";
+import MedicationsEditPage from "@/pages/medications-edit";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
 
@@ -51,6 +55,10 @@ if (false && !user && location !== "/login") {
                 <Route path="/" component={Dashboard} />
                 <Route path="/physicians" component={Physicians} />
                 <Route path="/appointments" component={Appointments} />
+                <Route path="/medications" component={MedicationsPage} />
+                <Route path="/medications/new" component={MedicationWizardPage} />
+                <Route path="/medications/print" component={MedicationsPrintPage} />
+                <Route path="/medications/:id/edit" component={MedicationsEditPage} />
                 <Route component={NotFound} />
               </Switch>
             </main>

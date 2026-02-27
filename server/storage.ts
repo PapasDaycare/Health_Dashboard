@@ -1,5 +1,29 @@
 import { type User, type InsertUser, type Physician, type InsertPhysician, type Appointment, type InsertAppointment, type Reminder, type InsertReminder } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { pool } from "./db";
+
+export type Medication = {
+  id: string;
+  userId: string;
+  name: string;
+  dose: string;
+  frequency: string;
+  reason: string | null;
+  notes: string | null;
+  showOnPrint: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type InsertMedication = {
+  userId: string;
+  name: string;
+  dose: string;
+  frequency: string;
+  reason: string | null;
+  notes: string | null;
+  showOnPrint: boolean;
+};
 
 export interface IStorage {
   // User methods
@@ -28,6 +52,13 @@ export interface IStorage {
   createReminder(reminder: InsertReminder): Promise<Reminder>;
   updateReminder(id: string, reminder: Partial<Reminder>): Promise<Reminder | undefined>;
   deleteReminder(id: string): Promise<boolean>;
+
+  // Medication methods
+  getMedication(id: string): Promise<Medication | undefined>;
+  getMedicationsByUser(userId: string): Promise<Medication[]>;
+  createMedication(medication: InsertMedication): Promise<Medication>;
+  updateMedication(id: string, medication: Partial<Medication>): Promise<Medication | undefined>;
+  deleteMedication(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -35,12 +66,14 @@ export class MemStorage implements IStorage {
   private physicians: Map<string, Physician>;
   private appointments: Map<string, Appointment>;
   private reminders: Map<string, Reminder>;
+  private medications: Map<string, Medication>;
 
   constructor() {
     this.users = new Map();
     this.physicians = new Map();
     this.appointments = new Map();
     this.reminders = new Map();
+    this.medications = new Map();
     
     // Seed demo data in any environment (Render is production, otherwise no demo user exists)
     this.initializeSampleData().catch(console.error);
@@ -123,6 +156,26 @@ export class MemStorage implements IStorage {
       notes: "Follow-up on recent lab results",
       status: "scheduled"
     });
+
+    await this.createMedication({
+      userId: "demo-user-id",
+      name: "Lisinopril",
+      dose: "10 mg",
+      frequency: "Once daily",
+      reason: "Blood pressure",
+      notes: null,
+      showOnPrint: true,
+    });
+
+    await this.createMedication({
+      userId: "demo-user-id",
+      name: "Metformin",
+      dose: "500 mg",
+      frequency: "Twice daily",
+      reason: "Diabetes",
+      notes: null,
+      showOnPrint: true,
+    });
   }
 
   // User methods
@@ -139,9 +192,13 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
     const user: User = { 
-      ...insertUser, 
       id,
-      createdAt: new Date()
+      username: insertUser.username,
+      password: insertUser.password,
+      email: insertUser.email ?? null,
+      firstName: insertUser.firstName ?? null,
+      lastName: insertUser.lastName ?? null,
+      createdAt: new Date(),
     };
     this.users.set(id, user);
     return user;
@@ -161,9 +218,16 @@ export class MemStorage implements IStorage {
   async createPhysician(insertPhysician: InsertPhysician): Promise<Physician> {
     const id = randomUUID();
     const physician: Physician = { 
-      ...insertPhysician, 
       id,
-      createdAt: new Date()
+      userId: insertPhysician.userId,
+      firstName: insertPhysician.firstName,
+      lastName: insertPhysician.lastName,
+      specialty: insertPhysician.specialty,
+      phone: insertPhysician.phone,
+      email: insertPhysician.email ?? null,
+      address: insertPhysician.address ?? null,
+      officeHours: insertPhysician.officeHours ?? null,
+      createdAt: new Date(),
     };
     this.physicians.set(id, physician);
     return physician;
@@ -211,9 +275,15 @@ export class MemStorage implements IStorage {
   async createAppointment(insertAppointment: InsertAppointment): Promise<Appointment> {
     const id = randomUUID();
     const appointment: Appointment = { 
-      ...insertAppointment, 
       id,
-      createdAt: new Date()
+      userId: insertAppointment.userId,
+      physicianId: insertAppointment.physicianId,
+      date: insertAppointment.date,
+      time: insertAppointment.time,
+      type: insertAppointment.type,
+      notes: insertAppointment.notes ?? null,
+      status: insertAppointment.status ?? "scheduled",
+      createdAt: new Date(),
     };
     this.appointments.set(id, appointment);
     return appointment;
@@ -246,9 +316,13 @@ export class MemStorage implements IStorage {
   async createReminder(insertReminder: InsertReminder): Promise<Reminder> {
     const id = randomUUID();
     const reminder: Reminder = { 
-      ...insertReminder, 
       id,
-      createdAt: new Date()
+      userId: insertReminder.userId,
+      appointmentId: insertReminder.appointmentId,
+      reminderDate: insertReminder.reminderDate,
+      message: insertReminder.message ?? null,
+      sent: insertReminder.sent ?? "false",
+      createdAt: new Date(),
     };
     this.reminders.set(id, reminder);
     return reminder;
@@ -266,6 +340,75 @@ export class MemStorage implements IStorage {
   async deleteReminder(id: string): Promise<boolean> {
     return this.reminders.delete(id);
   }
+
+  // Medication methods
+  async getMedication(id: string): Promise<Medication | undefined> {
+    return this.medications.get(id);
+  }
+
+  async getMedicationsByUser(userId: string): Promise<Medication[]> {
+    return Array.from(this.medications.values())
+      .filter((medication) => medication.userId === userId)
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async createMedication(insertMedication: InsertMedication): Promise<Medication> {
+    const id = randomUUID();
+    const now = new Date();
+    const medication: Medication = {
+      ...insertMedication,
+      id,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.medications.set(id, medication);
+    return medication;
+  }
+
+  async updateMedication(id: string, updates: Partial<Medication>): Promise<Medication | undefined> {
+    const medication = this.medications.get(id);
+    if (!medication) {
+      return undefined;
+    }
+
+    const updated: Medication = {
+      ...medication,
+      ...updates,
+      id: medication.id,
+      userId: medication.userId,
+      updatedAt: new Date(),
+    };
+    this.medications.set(id, updated);
+    return updated;
+  }
+
+  async deleteMedication(id: string): Promise<boolean> {
+    return this.medications.delete(id);
+  }
 }
 
-export const storage = new MemStorage();
+export class PgStorage extends MemStorage {
+  // Users are stored in Postgres (others still use MemStorage for now)
+  async getUser(id: string) {
+    const { rows } = await pool.query("SELECT * FROM users WHERE id = $1 LIMIT 1", [id]);
+    return rows[0];
+  }
+
+  async getUserByUsername(username: string) {
+    const { rows } = await pool.query("SELECT * FROM users WHERE username = $1 LIMIT 1", [username]);
+    return rows[0];
+  }
+
+  async createUser(insertUser: any) {
+    const { username, password, role, email, firstName, lastName } = insertUser;
+
+    const { rows } = await pool.query(
+      "INSERT INTO users (username, password, email, first_name, last_name) VALUES ($1,$2,$3,$4,$5) RETURNING *",
+      [username, password, email ?? null, firstName ?? null, lastName ?? null]
+    );
+
+    return rows[0];
+  }
+}
+
+export const storage = process.env.DATABASE_URL ? new PgStorage() : new MemStorage();

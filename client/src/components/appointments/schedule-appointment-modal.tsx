@@ -199,6 +199,7 @@ export default function ScheduleAppointmentModal({
                   <FormControl>
                     <Textarea 
                       {...field} 
+                      value={field.value ?? ""}
                       rows={3}
                       placeholder="Any specific concerns or notes for the appointment..."
                       data-testid="textarea-notes"

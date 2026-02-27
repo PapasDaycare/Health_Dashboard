@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Bell, Menu, Heart, Home, Users, Calendar } from "lucide-react";
+import { Search, Bell, Menu, Heart, Home, Users, Calendar, Pill } from "lucide-react";
 import { useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -70,6 +70,10 @@ export default function Header({ title }: HeaderProps) {
                   <a href="/appointments" onClick={() => setMobileMenuOpen(false)} className="group flex items-center px-3 py-3 text-base font-medium rounded-lg text-gray-600 hover:bg-gray-50">
                     <Calendar className="mr-4 h-6 w-6" />
                     Appointments
+                  </a>
+                  <a href="/medications" onClick={() => setMobileMenuOpen(false)} className="group flex items-center px-3 py-3 text-base font-medium rounded-lg text-gray-600 hover:bg-gray-50">
+                    <Pill className="mr-4 h-6 w-6" />
+                    Medications
                   </a>
                 </nav>
               </div>

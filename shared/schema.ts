@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, bigint } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -48,6 +48,17 @@ export const reminders = pgTable("reminders", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const patientPrintProfile = pgTable("patient_print_profile", {
+  userId: bigint("user_id", { mode: "number" }).primaryKey(),
+  fullName: text("full_name").notNull().default(""),
+  dob: text("dob").notNull().default(""),
+  allergies: text("allergies").notNull().default(""),
+  emergencyContact: text("emergency_contact").notNull().default(""),
+  pharmacy: text("pharmacy").notNull().default(""),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -69,6 +80,11 @@ export const insertReminderSchema = createInsertSchema(reminders).omit({
   createdAt: true,
 });
 
+export const insertPatientPrintProfileSchema = createInsertSchema(patientPrintProfile).omit({
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -81,3 +97,6 @@ export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;
 
 export type Reminder = typeof reminders.$inferSelect;
 export type InsertReminder = z.infer<typeof insertReminderSchema>;
+
+export type PatientPrintProfile = typeof patientPrintProfile.$inferSelect;
+export type InsertPatientPrintProfile = z.infer<typeof insertPatientPrintProfileSchema>;
