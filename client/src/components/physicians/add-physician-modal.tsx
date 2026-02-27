@@ -2,12 +2,11 @@ import { useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertPhysicianSchema, type InsertPhysician } from "@shared/schema";
+import { insertPhysicianSchema, type InsertPhysician, type Physician } from "@shared/schema";
 import { z } from "zod";
 import { useAuth } from "@/lib/auth";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -21,6 +20,8 @@ interface AddPhysicianModalProps {
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: InsertPhysician) => void;
   isLoading?: boolean;
+  mode?: "add" | "edit";
+  physician?: Physician | null;
 }
 
 const specialtyOptions = [
@@ -38,7 +39,9 @@ export default function AddPhysicianModal({
   open, 
   onOpenChange, 
   onSubmit, 
-  isLoading = false 
+  isLoading = false,
+  mode = "add",
+  physician = null,
 }: AddPhysicianModalProps) {
   const { user } = useAuth();
   const userId = user?.id || "";
@@ -62,19 +65,31 @@ export default function AddPhysicianModal({
       return;
     }
 
-    form.setValue("userId", userId);
-  }, [form, open, userId]);
+    form.reset({
+      userId,
+      firstName: physician?.firstName ?? "",
+      lastName: physician?.lastName ?? "",
+      specialty: physician?.specialty ?? "",
+      phone: physician?.phone ?? "",
+      email: physician?.email ?? "",
+      address: physician?.address ?? "",
+      officeHours: physician?.officeHours ?? "",
+    });
+  }, [form, open, physician, userId]);
 
   const handleSubmit = (values: z.infer<typeof physicianFormSchema>) => {
     onSubmit(values);
-    form.reset();
   };
+
+  const title = mode === "edit" ? "Edit Physician" : "Add New Physician";
+  const submitText = mode === "edit" ? "Save Changes" : "Add Physician";
+  const submittingText = mode === "edit" ? "Saving..." : "Adding...";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-lg sm:text-xl">Add New Physician</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">{title}</DialogTitle>
         </DialogHeader>
         
         <Form {...form}>
@@ -114,7 +129,7 @@ export default function AddPhysicianModal({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Medical Specialty</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger data-testid="select-specialty">
                         <SelectValue placeholder="Select a specialty" />
@@ -228,7 +243,7 @@ export default function AddPhysicianModal({
                 className="w-full sm:w-auto bg-medical-blue hover:bg-medical-blue/90 order-1 sm:order-2"
                 data-testid="button-submit"
               >
-                {isLoading ? "Adding..." : "Add Physician"}
+                {isLoading ? submittingText : submitText}
               </Button>
             </div>
           </form>

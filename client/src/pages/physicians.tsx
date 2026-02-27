@@ -14,7 +14,9 @@ import ScheduleAppointmentModal from "@/components/appointments/schedule-appoint
 
 export default function Physicians() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [editingPhysician, setEditingPhysician] = useState<Physician | null>(null);
   const [selectedPhysicianId, setSelectedPhysicianId] = useState<string | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -37,6 +39,21 @@ export default function Physicians() {
     },
     onError: () => {
       toast({ title: "Failed to add physician", variant: "destructive" });
+    },
+  });
+
+  const updatePhysicianMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: InsertPhysician }) =>
+      apiRequest("PUT", `/api/physicians/${id}`, data),
+    onSuccess: () => {
+      toast({ title: "Physician updated successfully" });
+      setIsEditModalOpen(false);
+      setEditingPhysician(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/physicians"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+    },
+    onError: () => {
+      toast({ title: "Failed to update physician", variant: "destructive" });
     },
   });
 
@@ -83,7 +100,14 @@ export default function Physicians() {
   };
 
   const handleEditPhysician = (physicianId: string) => {
-    toast({ title: "Edit physician functionality coming soon" });
+    const physician = physicians.find((p) => p.id === physicianId);
+    if (!physician) {
+      toast({ title: "Physician not found", variant: "destructive" });
+      return;
+    }
+
+    setEditingPhysician(physician);
+    setIsEditModalOpen(true);
   };
 
   if (isLoading) {
@@ -239,6 +263,25 @@ export default function Physicians() {
         onOpenChange={setIsAddModalOpen}
         onSubmit={addPhysicianMutation.mutate}
         isLoading={addPhysicianMutation.isPending}
+      />
+
+      <AddPhysicianModal
+        open={isEditModalOpen}
+        onOpenChange={(open) => {
+          setIsEditModalOpen(open);
+          if (!open) {
+            setEditingPhysician(null);
+          }
+        }}
+        onSubmit={(data) => {
+          if (!editingPhysician) {
+            return;
+          }
+          updatePhysicianMutation.mutate({ id: editingPhysician.id, data });
+        }}
+        isLoading={updatePhysicianMutation.isPending}
+        mode="edit"
+        physician={editingPhysician}
       />
 
       <ScheduleAppointmentModal
