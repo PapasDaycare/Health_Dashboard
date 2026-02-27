@@ -110,7 +110,7 @@ export default function ScheduleAppointmentModal({
                     <SelectContent>
                       {physicians.map((physician) => (
                         <SelectItem key={physician.id} value={physician.id}>
-                          Dr. {physician.firstName} {physician.lastName} - {physician.specialty}
+                          {physician.firstName} {physician.lastName} - {physician.specialty}
                         </SelectItem>
                       ))}
                     </SelectContent>

@@ -49,7 +49,7 @@ export default function Appointments() {
 
   const getPhysicianName = (physicianId: string) => {
     const physician = physicians.find(p => p.id === physicianId);
-    return physician ? `Dr. ${physician.firstName} ${physician.lastName}` : "Unknown Physician";
+    return physician ? `${physician.firstName} ${physician.lastName}` : "Unknown Physician";
   };
 
   const getPhysicianSpecialty = (physicianId: string) => {

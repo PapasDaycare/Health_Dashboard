@@ -59,7 +59,7 @@ export default function PhysicianList({
                   </div>
                   <div className="min-w-0 flex-1">
                     <h4 className="text-base sm:text-lg font-medium text-gray-900 truncate">
-                      Dr. {physician.firstName} {physician.lastName}
+                      {physician.firstName} {physician.lastName}
                     </h4>
                     <p className="text-medical-gray text-sm">{physician.specialty}</p>
                     <div className="flex items-center mt-1 text-xs sm:text-sm text-medical-gray">

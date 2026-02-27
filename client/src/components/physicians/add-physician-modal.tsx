@@ -28,6 +28,8 @@ const specialtyOptions = [
   { value: "cardiology", label: "Cardiology" },
   { value: "dermatology", label: "Dermatology" },
   { value: "family-medicine", label: "Family Medicine" },
+  { value: "FNP", label: "Family Nurse Practitioner (FNP)" },
+  { value: "NP", label: "Nurse Practitioner (NP)" },
   { value: "neurology", label: "Neurology" },
   { value: "orthopedics", label: "Orthopedics" },
   { value: "pediatrics", label: "Pediatrics" },
